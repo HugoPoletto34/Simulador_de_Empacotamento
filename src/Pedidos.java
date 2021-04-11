@@ -4,7 +4,6 @@ public class Pedidos {
     String nome;
     int qtdeProdutos;
     int prazo;
-    double tempoTransicao = 0.5;
 
     public Pedidos(String nome, int qtdeProdutos, int prazo) {
         this.nome = nome;
@@ -12,31 +11,40 @@ public class Pedidos {
         this.prazo = prazo;
     }
 
-    public void organizaPedidos(int qtdePedidos, Pedidos[] listaPedidos, int posic) {
-        if (qtdePedidos != 1) {
-            ArrayList listaMenorPrioridade = new ArrayList();
-
-            listaMenorPrioridade.clone();
-            for (int i = 0; i < (qtdePedidos - 1); i++) {
+    public void organizaPedidos(ArrayList<Pedidos> listaPedidos) {
+        if (listaPedidos.size() >= 1) {
+            for (int i = 0; i < (listaPedidos.size() - 1); i++) {
                 int menor = i;
+                System.out.println(listaPedidos.get(menor).prazo);
 
-                for (int j = (i + 1); j < qtdePedidos; j++){
-                    if (listaPedidos[menor].prazo > listaPedidos[j].prazo && listaPedidos[j].prazo != 0){
+                for (int j = (i + 1); j < listaPedidos.size(); j++){
+                    if (compMenor(listaPedidos, menor, j))
                         menor = j;
-                    }
-                    if (listaPedidos[j].prazo == 0)
-                        listaMenorPrioridade.add(listaPedidos[j]);
+
                 }
                 swap(listaPedidos, menor, i);
             }
         }
             
-    }
+   }
 
-    private void swap(Pedidos[] listaPedidos, int part1, int part2) {
-        Pedidos temp = listaPedidos[part1];
-        listaPedidos[part1] = listaPedidos[part2];
-        listaPedidos[part2] = temp;
+   private boolean compMenor(ArrayList<Pedidos> listaPedidos, int p1, int p2) {
+        if (listaPedidos.get(p1).prazo > listaPedidos.get(p2).prazo) {
+            return true;
+        }
+        else if (listaPedidos.get(p1).prazo == listaPedidos.get(p2).prazo) {
+            if (listaPedidos.get(p1).qtdeProdutos > listaPedidos.get(p2).qtdeProdutos)
+                return true;
+            else
+                return false;
+        }
+        else
+            return false;
+   }
 
+    private void swap(ArrayList listaPedidos, int part1, int part2) {
+        Object temp = listaPedidos.get(part1);
+        listaPedidos.set(part1, listaPedidos.get(part2));
+        listaPedidos.set(part2, temp);
     }
 }

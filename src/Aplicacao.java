@@ -1,25 +1,31 @@
 import java.io.*;
-
+import java.util.ArrayList;
 
 public class Aplicacao {
     public static void main(String[] args) {
+        ArrayList<Pedidos> listaPedidos = new ArrayList();
+        ArrayList<Pedidos> listaMenorPrioridade = new ArrayList();
+        criaPedidos(listaPedidos, listaMenorPrioridade);
+    }
+
+    public static void criaPedidos(ArrayList<Pedidos> listaPedidos,  ArrayList<Pedidos> listaMenorPrioridade) {
         ArquivoTextoLeitura arq = new ArquivoTextoLeitura();
-        MyTimer timer = new MyTimer();
         arq.abrirArquivo("DadosEmpacotadeira.txt");
         int tam = Integer.parseInt(arq.ler());
         String[] ent;
-        Pedidos[] listaPedidos = new Pedidos[tam];
-        int qtdePedidos = 0;
-        //timer.initTimer();
 
         for (int i = 0; i < tam; i++) {
             ent = arq.ler().split(";");
-            listaPedidos[i] = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]));
-            qtdePedidos++;
-            listaPedidos[i].organizaPedidos(qtdePedidos, listaPedidos, i);
+            Pedidos pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]));
+            if (pd.prazo != 0) {
+                listaPedidos.add(pd);
+                pd.organizaPedidos(listaPedidos);
+            }
+            else {
+                listaMenorPrioridade.add(pd);
+                pd.organizaPedidos(listaMenorPrioridade);
+            }
         }
-
-
         arq.fecharArquivo();
     }
 }
