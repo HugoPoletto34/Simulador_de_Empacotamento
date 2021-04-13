@@ -1,7 +1,7 @@
 # Relatório
  - Nome do Arquivo de pedidos: DadosEmpacotadeira.txt
  - Quantidade de pedidos: 169
- - Tempo médio gasto de pedidos: 699.9001972386585
+ - Tempo médio gasto de pedidos: 11.665003287310979
 ## Tempo de Execução:
  - Expediente: 8h à 17h
  - Tempo lista COM prioridade: 2h35m -- Finalizado: 10h35m

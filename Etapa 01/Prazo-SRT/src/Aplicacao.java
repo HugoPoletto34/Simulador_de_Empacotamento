@@ -44,9 +44,11 @@ public class Aplicacao {
 
     public static void startEmpacotamento(ArrayList<Pedidos> listaPedidos, BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) {
         boolean jaPassouMeioDia = false;
+
         for (int i = 0; i < listaPedidos.size(); i++) {
             Pedidos pedido = listaPedidos.get(i);
             double initTime = timer.hora * 3600 + timer.minuto  * 60 + timer.segundo;
+
             esteira.rodaProdutos(20);
             while (!pedido.pedidoCompleto()) {
                 Pacotes pacote = new Pacotes(pedido);
@@ -57,6 +59,7 @@ public class Aplicacao {
             double finalTime = (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo);
             pedido.minutoFinalizado = (finalTime -initTime) / 60;
 
+            // Para relatório -- INICIO
             if (!jaPassouMeioDia && timer.hora >= 12) {
                 qtdePacotesFeitosMeioDia = caminhao.pacotesCaminhao.size();
                 jaPassouMeioDia = true;
@@ -69,7 +72,7 @@ public class Aplicacao {
                 qtdePacotesFeitos = caminhao.pacotesCaminhao.size();
                 qtdePedidosFinalizados++;
             }
-
+            // Para relatório -- FIM
         }
     }
 

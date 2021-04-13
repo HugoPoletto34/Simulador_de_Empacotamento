@@ -1,2 +1,0 @@
-module Simulador_Empacotamento {
-}
