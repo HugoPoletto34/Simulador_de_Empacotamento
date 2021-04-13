@@ -8,6 +8,8 @@ public class Aplicacao {
     static String tempoListaCOMPrioridade;
     static String tempoListaSEMPrioridade;
     static String tempoTotalExecucao;
+    static int qtdePacotesFeitosMeioDia;
+    static int qtdePedidosFinalizadosMeioDia;
     static int qtdePacotesFeitos;
     static int qtdePedidosFinalizados;
     static double tempoGastoPedido;
@@ -37,7 +39,7 @@ public class Aplicacao {
 
         tempoTotalExecucao = timer.hora + "h" + timer.minuto  + "m";
 
-        criarRelatorio();
+        criarRelatorio(caminhao);
     }
 
     public static void startEmpacotamento(ArrayList<Pedidos> listaPedidos, BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) {
@@ -56,12 +58,18 @@ public class Aplicacao {
             pedido.minutoFinalizado = (finalTime -initTime) / 60;
 
             if (!jaPassouMeioDia && timer.hora >= 12) {
-                qtdePacotesFeitos = caminhao.pacotesCaminhao.size();
+                qtdePacotesFeitosMeioDia = caminhao.pacotesCaminhao.size();
                 jaPassouMeioDia = true;
             }
             else if (!jaPassouMeioDia)
-                qtdePedidosFinalizados++;
+                qtdePedidosFinalizadosMeioDia++;
             tempoGastoPedido += (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo) / 60;
+
+            if (timer.hora <= 17) {
+                qtdePacotesFeitos = caminhao.pacotesCaminhao.size();
+                qtdePedidosFinalizados++;
+            }
+
         }
     }
 
@@ -93,7 +101,7 @@ public class Aplicacao {
         arq.fecharArquivo();
     }
 
-    public static void criarRelatorio() {
+    public static void criarRelatorio(Caminhao caminhao) {
         ArquivoTextoEscrita arqEscrita = new ArquivoTextoEscrita();
         arqEscrita.abrirArquivo("relatório.md");
         arqEscrita.escrever("# Relatório");
@@ -105,8 +113,12 @@ public class Aplicacao {
         arqEscrita.escrever(" - Tempo lista SEM prioridade: " + tempoListaSEMPrioridade);
         arqEscrita.escrever(" - Tempo total: " + tempoTotalExecucao);
         arqEscrita.escrever("## Quantidade de Pacotes e pedidos às 12h:");
-        arqEscrita.escrever(" - Quantidade de pacotes feitos: " + qtdePacotesFeitos);
-        arqEscrita.escrever(" - Quantidade de pedidos feitos: " + qtdePedidosFinalizados);
+        arqEscrita.escrever(" - Quantidade de pacotes feitos: " + qtdePacotesFeitosMeioDia);
+        arqEscrita.escrever(" - Quantidade de pedidos feitos: " + qtdePedidosFinalizadosMeioDia);
+        arqEscrita.escrever("## Quantidade de Pacotes e pedidos no caminhão no fim do expediente (17h):");
+        arqEscrita.escrever(" - Quantidade de pacotes: " + qtdePacotesFeitos);
+        arqEscrita.escrever(" - Quantidade de pedidos finalizados: " + qtdePedidosFinalizados);
+
         arqEscrita.fecharArquivo();
     }
 }

@@ -9,3 +9,6 @@
 ## Quantidade de Pacotes e pedidos às 12h:
  - Quantidade de pacotes feitos: 2636
  - Quantidade de pedidos feitos: 106
+## Quantidade de Pacotes e pedidos no caminhão no fim do expediente (17h):
+ - Quantidade de pacotes: 5872
+ - Quantidade de pedidos finalizados: 169
