@@ -6,6 +6,7 @@ public class Pedidos {
     int qtdeProdutosEmpacotados;
     int prazo;
     int qtdePacotesNecessario;
+    double minutoFinalizado;
     ArrayList<Pacotes> pacotes = new ArrayList();
 
 
@@ -14,6 +15,7 @@ public class Pedidos {
         this.qtdeProdutosPedido = qtdeProdutos;
         this.qtdeProdutosEmpacotados = 0;
         this.prazo = prazo;
+        this.minutoFinalizado = 0;
         this.qtdePacotesNecessario = (this.qtdeProdutosPedido / 20) + (this.qtdeProdutosPedido < 20 ? 1 : 0);
     }
 
