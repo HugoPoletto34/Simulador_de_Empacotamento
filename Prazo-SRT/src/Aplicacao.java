@@ -109,9 +109,10 @@ public class Aplicacao {
         arqEscrita.escrever(" - Quantidade de pedidos: " + qtdePedidos);
         arqEscrita.escrever(" - Tempo médio gasto de pedidos: " + tempoGastoPedido / qtdePedidos);
         arqEscrita.escrever("## Tempo de Execução:");
+        arqEscrita.escrever(" - Expediente: 8h à 17h");
         arqEscrita.escrever(" - Tempo lista COM prioridade: " + tempoListaCOMPrioridade);
         arqEscrita.escrever(" - Tempo lista SEM prioridade: " + tempoListaSEMPrioridade);
-        arqEscrita.escrever(" - Tempo total: " + tempoTotalExecucao);
+        arqEscrita.escrever(" - Expediente total de empacotamento : " + tempoTotalExecucao);
         arqEscrita.escrever("## Quantidade de Pacotes e pedidos às 12h:");
         arqEscrita.escrever(" - Quantidade de pacotes feitos: " + qtdePacotesFeitosMeioDia);
         arqEscrita.escrever(" - Quantidade de pedidos feitos: " + qtdePedidosFinalizadosMeioDia);
