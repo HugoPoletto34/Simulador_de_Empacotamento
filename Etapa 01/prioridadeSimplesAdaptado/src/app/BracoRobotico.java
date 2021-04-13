@@ -16,16 +16,6 @@ public class BracoRobotico {
         pedido.qtdePacotesNecessario--;
         timer.incrementaSegundo(tempoProducao);
     }
-    
-    public void inserirProdutos2Esteiras(Pedidos pedido, Pacotes pacote, Esteira esteira1, Esteira esteira2, MyTimer timer) {
-        while (esteira1.temProdutos() && !pacote.estaCheio() && pedido.temProdutosParaEmpacotar()) {
-            esteira1.retirarProdutoEsteira();
-            pacote.inserirProduto();
-            pedido.empacotandoProduto();
-        }
-        pedido.qtdePacotesNecessario--;
-        timer.incrementaSegundo(tempoProducao);
-    }
 
     public void colocarPacoteNaEsteira(Pacotes pacote, Caminhao caminhao, MyTimer timer) {
         caminhao.AdicionarNoCaminhao(pacote);
