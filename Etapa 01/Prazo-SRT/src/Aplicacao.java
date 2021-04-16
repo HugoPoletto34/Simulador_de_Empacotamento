@@ -2,12 +2,14 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class Aplicacao {
-    static MyTimer timer = new MyTimer(8, 0);
+    static int horaInicio = 8;
+    static MyTimer timer = new MyTimer(horaInicio, 0);
     static String nomeArquivo = "DadosEmpacotadeira.txt";
     static int qtdePedidos;
     static String tempoListaCOMPrioridade;
     static String tempoListaSEMPrioridade;
     static String tempoTotalExecucao;
+    static int qtdePedidosFinalizadosAntesDoPrazo;
     static int qtdePacotesFeitosMeioDia;
     static int qtdePedidosFinalizadosMeioDia;
     static int qtdePacotesFeitos;
@@ -38,8 +40,7 @@ public class Aplicacao {
         tempoListaSEMPrioridade = (timer.hora - hora) + "h" + (timer.minuto - minuto)  + "m";
 
         tempoTotalExecucao = timer.hora + "h" + timer.minuto  + "m";
-
-        criarRelatorio(caminhao);
+        criarRelatorio();
     }
 
     public static void startEmpacotamento(ArrayList<Pedidos> listaPedidos, BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) {
@@ -57,16 +58,23 @@ public class Aplicacao {
                 transicaoPacoteEsteira(bracoRobotico, pacote, esteira, caminhao);
             }
             double finalTime = (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo);
-            pedido.minutoFinalizado = (finalTime -initTime) / 60;
+
+            pedido.minutoFinalizado = ((finalTime -initTime) / 60) < pedido.prazo;
 
             // Para relatório -- INICIO
+            if (pedido.prazo != 0)
+                qtdePedidosFinalizadosAntesDoPrazo += (pedido.minutoFinalizado ? 1 : 0);
+            else
+                qtdePedidosFinalizadosAntesDoPrazo++;
+
             if (!jaPassouMeioDia && timer.hora >= 12) {
                 qtdePacotesFeitosMeioDia = caminhao.pacotesCaminhao.size();
                 jaPassouMeioDia = true;
             }
             else if (!jaPassouMeioDia)
                 qtdePedidosFinalizadosMeioDia++;
-            tempoGastoPedido += (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo) / 60;
+                
+            tempoGastoPedido += ((timer.hora - horaInicio) * 3600 + timer.minuto  * 60 + timer.segundo);
 
             if (timer.hora <= 17) {
                 qtdePacotesFeitos = caminhao.pacotesCaminhao.size();
@@ -104,13 +112,14 @@ public class Aplicacao {
         arq.fecharArquivo();
     }
 
-    public static void criarRelatorio(Caminhao caminhao) {
+    public static void criarRelatorio() {
         ArquivoTextoEscrita arqEscrita = new ArquivoTextoEscrita();
         arqEscrita.abrirArquivo("relatório.md");
-        arqEscrita.escrever("# Relatório");
+        arqEscrita.escrever("# Relatório - Ordenação pelo prazo + SRT");
         arqEscrita.escrever(" - Nome do Arquivo de pedidos: " + nomeArquivo);
         arqEscrita.escrever(" - Quantidade de pedidos: " + qtdePedidos);
-        arqEscrita.escrever(" - Tempo médio gasto de pedidos: " + tempoGastoPedido / qtdePedidos);
+        arqEscrita.escrever(" - Tempo médio gasto de pedidos em hora: " + (tempoGastoPedido / 3600) / qtdePedidos);
+        arqEscrita.escrever(" - Quantidade de Pedidos finalizados antes do prazo estipulado: " + qtdePedidosFinalizadosAntesDoPrazo );
         arqEscrita.escrever("## Tempo de Execução:");
         arqEscrita.escrever(" - Expediente: 8h à 17h");
         arqEscrita.escrever(" - Tempo lista COM prioridade: " + tempoListaCOMPrioridade);

@@ -1,7 +1,8 @@
-# Relatório
+# Relatório - Ordenação pelo prazo + SRT
  - Nome do Arquivo de pedidos: DadosEmpacotadeira.txt
  - Quantidade de pedidos: 169
- - Tempo médio gasto de pedidos: 11.665003287310979
+ - Tempo médio gasto de pedidos em hora: 3.66500328731098
+ - Quantidade de Pedidos finalizados antes do prazo estipulado: 169
 ## Tempo de Execução:
  - Expediente: 8h à 17h
  - Tempo lista COM prioridade: 2h35m -- Finalizado: 10h35m
