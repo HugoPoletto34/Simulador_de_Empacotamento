@@ -26,8 +26,7 @@ public class Aplicacao {
         minutoInicio = timer.minuto;
         startEmpacotamento(bracoRobotico, caminhao, esteira);
 
-        relatorio.tempoListaCOMPrioridade = relatorio.getTempoExecucaoLista(horaInicio, minutoInicio, timer);
-        relatorio.setTempoTotalExecucao(timer);
+        relatorio.setTempoTotalExecucao(horaInicio, minutoInicio, timer.hora, timer.minuto);
         relatorio.criarRelatorio(nomeArquivo);
     }
 
