@@ -4,42 +4,65 @@ import java.util.ArrayList;
 public class Aplicacao {
     static MyTimer timer = new MyTimer(8, 0);
     static Relatorio relatorio = new Relatorio();
-    static String nomeArquivo = "DadosEmpacotadeira.txt";
+    static String nomeArquivo = "DadosEmpacotadeira_2.txt";
+    static ArquivoTextoLeitura arq = new ArquivoTextoLeitura();
+    static ArrayList<Pedidos> listaPrincipal = new ArrayList();
+    static ArrayList<Pedidos> listaPedidosFinalizados = new ArrayList();
+    static int qtdPedidos;
 
-    public static void main(String[] args) {
-        ArrayList<Pedidos> listaPedidos = new ArrayList();
-        ArrayList<Pedidos> listaMenorPrioridade = new ArrayList();
+
+    public static void main(String[] args) throws Exception {
+        arq.abrirArquivo(nomeArquivo);
+        qtdPedidos = Integer.parseInt(arq.ler());
+        relatorio.qtdePedidos = qtdPedidos;
+
         BracoRobotico bracoRobotico = new BracoRobotico();
         Caminhao caminhao = new Caminhao();
         Esteira esteira = new Esteira();
         int horaInicio;
         int minutoInicio;
-        long initTime = System.currentTimeMillis();
-
-        criaPedidos(listaPedidos, listaMenorPrioridade);
-        timer.incrementaSegundo((System.currentTimeMillis() - initTime) / 1000);
 
         horaInicio = timer.hora;
         minutoInicio = timer.minuto;
-        startEmpacotamento(listaPedidos, bracoRobotico, caminhao, esteira);
-        relatorio.tempoListaCOMPrioridade = relatorio.getTempoExecucaoLista(horaInicio, minutoInicio, timer);
+        startEmpacotamento(bracoRobotico, caminhao, esteira);
 
-        horaInicio = timer.hora;
-        minutoInicio = timer.minuto;
-        startEmpacotamento(listaMenorPrioridade, bracoRobotico, caminhao, esteira);
-        relatorio.tempoListaSEMPrioridade = relatorio.getTempoExecucaoLista(horaInicio, minutoInicio, timer);
-
-        relatorio.setTempoTotalExecucao(timer);
-
-
+        relatorio.setTempoTotalExecucao(horaInicio, minutoInicio, timer.hora, timer.minuto);
         relatorio.criarRelatorio(nomeArquivo);
     }
 
-    public static void startEmpacotamento(ArrayList<Pedidos> listaPedidos, BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) {
-        for (int i = 0; i < listaPedidos.size(); i++) {
-            Pedidos pedido = listaPedidos.get(i);
-            double initTime = timer.hora * 3600 + timer.minuto  * 60 + timer.segundo;
+    public static void verificarListaPedidos() throws NullPointerException {
+        String linhaArq = arq.ler();
+        try {
+            String[] ent = {"", "", "", ""};
+            if (linhaArq != null)
+                ent = linhaArq.split(";");
+            int minutoAtual = (timer.hora - 8) * 60 + (timer.minuto);
+            Pedidos pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]), Integer.parseInt(ent[3]));
+            int minutoChegadaPedido = pd.horaChegada;
+            listaPrincipal.add(pd);
 
+            while (minutoAtual >= minutoChegadaPedido && listaPrincipal.size() < qtdPedidos) {
+                linhaArq = arq.ler();
+                if (linhaArq != null) {
+                    ent = linhaArq.split(";");
+                    pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]), Integer.parseInt(ent[3]));
+                    minutoChegadaPedido = pd.horaChegada;
+                    listaPrincipal.add(pd);
+                }
+            }
+            pd.organizaPedidos(listaPrincipal);
+        } catch (Exception e) {
+
+        }
+
+    };
+
+    public static void startEmpacotamento(BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) throws Exception {
+        for (int i = 0; i < qtdPedidos; i++) {
+            verificarListaPedidos();
+            Pedidos pedido = listaPrincipal.remove(0);
+
+            double initTime = timer.hora * 3600 + timer.minuto  * 60 + timer.segundo;
             esteira.rodaProdutos(20);
             while (!pedido.pedidoCompleto()) {
                 Pacotes pacote = new Pacotes(pedido);
@@ -47,43 +70,25 @@ public class Aplicacao {
                 bracoRobotico.inserirProdutos(pedido, pacote, esteira, timer);
                 transicaoPacoteEsteira(bracoRobotico, pacote, esteira, caminhao);
             }
+            listaPedidosFinalizados.add(pedido);
+
             double finalTime = (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo);
-
-            pedido.minutoFinalizado = ((finalTime -initTime) / 60) < pedido.prazo;
-
+            pedido.minutoFinalizado = pedido.prazo == 0 ? true : (((finalTime -initTime) / 60) < pedido.prazo);
             relatorio.makeRelatorioPedido(pedido, caminhao, timer);
+        }
+
+        for (int i = 0; i < listaPedidosFinalizados.size(); i++) {
+            Pedidos aux = listaPedidosFinalizados.get(i);
+            System.out.println(i + " " + aux.prazo + " " + aux.nome + " " + aux.qtdeProdutosPedido);
         }
     }
 
-    private static void transicaoPacoteEsteira(BracoRobotico bracoRobotico, Pacotes pacote, Esteira esteira, Caminhao caminhao) {
+    private static void transicaoPacoteEsteira(BracoRobotico bracoRobotico, Pacotes pacote, Esteira esteira, Caminhao caminhao) throws IllegalAccessException {
         double tempoTransicacao = 0.5;
         bracoRobotico.colocarPacoteNaEsteira(pacote, caminhao, timer);
         esteira.rodaProdutos(20);
         timer.incrementaSegundo(tempoTransicacao);
     }
-
-    public static void criaPedidos(ArrayList<Pedidos> listaPedidos,  ArrayList<Pedidos> listaMenorPrioridade) {
-        ArquivoTextoLeitura arq = new ArquivoTextoLeitura();
-        arq.abrirArquivo(nomeArquivo);
-        relatorio.qtdePedidos = Integer.parseInt(arq.ler());
-        String[] ent;
-
-        for (int i = 0; i < relatorio.qtdePedidos; i++) {
-            ent = arq.ler().split(";");
-            Pedidos pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]));
-            if (pd.prazo != 0) {
-                listaPedidos.add(pd);
-                pd.organizaPedidos(listaPedidos);
-            }
-            else {
-                listaMenorPrioridade.add(pd);
-                pd.organizaPedidos(listaMenorPrioridade);
-            }
-        }
-        arq.fecharArquivo();
-    }
-
-
 }
 
 class ArquivoTextoLeitura {

@@ -1,7 +1,7 @@
 public class Relatorio {
     public int qtdePedidos;
-    public String tempoListaCOMPrioridade;
-    public String tempoListaSEMPrioridade;
+    //public String tempoListaCOMPrioridade;
+    //public String tempoListaSEMPrioridade;
     public String tempoTotalExecucao;
     public int qtdePedidosFinalizadosAntesDoPrazo;
     public int qtdePacotesFeitosMeioDia;
@@ -15,13 +15,10 @@ public class Relatorio {
 
     }
 
-    public String getTempoExecucaoLista(int horaInicio, int minutoInicio, MyTimer timer) {
-        return (timer.hora - horaInicio) + "h" + (timer.minuto - minutoInicio) + "m" + " -- Finalizado: " + timer.hora + "h" + timer.minuto + "m";
+    public void setTempoTotalExecucao(int horaInicio, int minutoInicio, int horaTermino, int minutoTermino) {
+        tempoTotalExecucao = "Inicio: " + (horaInicio) + "h" + (minutoInicio) + "m" + " -- Fim: " + horaTermino + "h" + minutoTermino + "m";
     }
 
-    public void setTempoTotalExecucao(MyTimer timer) {
-        tempoTotalExecucao = timer.hora + "h" + timer.minuto  + "m";
-    }
 
     public void makeRelatorioPedido(Pedidos pedido, Caminhao caminhao, MyTimer timer) {
         if (pedido.prazo != 0)
@@ -54,8 +51,8 @@ public class Relatorio {
         arqEscrita.escrever(" - Quantidade de Pedidos finalizados antes do prazo estipulado: " + qtdePedidosFinalizadosAntesDoPrazo );
         arqEscrita.escrever("## Tempo de Execução:");
         arqEscrita.escrever(" - Expediente: 8h à 17h");
-        arqEscrita.escrever(" - Tempo lista COM prioridade: " + tempoListaCOMPrioridade);
-        arqEscrita.escrever(" - Tempo lista SEM prioridade: " + tempoListaSEMPrioridade);
+        //arqEscrita.escrever(" - Tempo lista COM prioridade: " + tempoListaCOMPrioridade);
+        //arqEscrita.escrever(" - Tempo lista SEM prioridade: " + tempoListaSEMPrioridade);
         arqEscrita.escrever(" - Expediente total de empacotamento : " + tempoTotalExecucao);
         arqEscrita.escrever("## Quantidade de Pacotes e pedidos às 12h:");
         arqEscrita.escrever(" - Quantidade de pacotes feitos: " + qtdePacotesFeitosMeioDia);
