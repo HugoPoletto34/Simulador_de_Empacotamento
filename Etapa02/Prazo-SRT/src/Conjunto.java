@@ -16,28 +16,27 @@ public class Conjunto extends Thread{
     Caminhao caminhao;
     int qtdPedidos;
 
-    public Conjunto(int id, Semaphore listLock, String nomeArquivo, ArquivoTextoLeitura arq, MyTimer timer, SyncList lists, ArrayList<Pedidos> listaPedidosFinalizados, Caminhao caminhao) {
+    public Conjunto(int id, Semaphore listLock, String nomeArquivo, ArquivoTextoLeitura arq, MyTimer timer, SyncList lists, ArrayList<Pedidos> listaPedidosFinalizados, int qtdPedidos, Caminhao caminhao) {
         this.id = id;
         this.listLock = listLock;
         this.nomeArquivo = nomeArquivo;
         this.arq = arq;
         this.esteira = new Esteira();
         this.bracoRobotico = new BracoRobotico();
-        this.timer = timer;
+        this.timer = new MyTimer(8, 0)/*timer*/;
         this.lists = lists;
         this.listaPedidosFinalizados = listaPedidosFinalizados;
+        this.qtdPedidos = qtdPedidos;
         this.relatorio = new Relatorio();
         this.caminhao = caminhao;
     }
 
     @Override
     public void run() {
-        arq.abrirArquivo(nomeArquivo);
-        qtdPedidos = Integer.parseInt(arq.ler());
         relatorio.qtdePedidos = qtdPedidos;
         int horaInicio;
         int minutoInicio;
-
+        int iLista = 0;
         horaInicio = timer.hora;
         minutoInicio = timer.minuto;
         try {
@@ -47,7 +46,8 @@ public class Conjunto extends Thread{
         }
 
         relatorio.setTempoTotalExecucao(horaInicio, minutoInicio, timer.hora, timer.minuto);
-        relatorio.criarRelatorio(nomeArquivo);
+        relatorio.criarRelatorio(id, nomeArquivo);
+        System.out.println("---------------Thread-" + id + "Finalizado---------------");
     }
 
     public Pedidos getMyPedido() throws InterruptedException {
@@ -67,7 +67,7 @@ public class Conjunto extends Thread{
     }
 
     public void startEmpacotamento(BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) throws Exception {
-        for (int i = 0; i < qtdPedidos; i++) {
+        for (int i = 0; listaPedidosFinalizados.size() < qtdPedidos; i++) {
             listLock.acquire();
                 Pedidos pedido = getMyPedido();
                     listLock.release();
@@ -80,7 +80,7 @@ public class Conjunto extends Thread{
                     bracoRobotico.inserirProdutos(pedido, pacote, esteira, timer);
                     transicaoPacoteEsteira(bracoRobotico, pacote, esteira, caminhao);
                 }
-                System.out.println(id + " " + i + " " + pedido.prazo + " " + pedido.nome + " " + pedido.qtdeProdutosPedido);
+                System.out.println("Thread-" + id + " - " + pedido.prazo + " " + pedido.nome + " " + pedido.qtdeProdutosPedido + " " + pedido.horaChegada);
                 listaPedidosFinalizados.add(pedido);
 
                 double finalTime = (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo);
@@ -88,11 +88,7 @@ public class Conjunto extends Thread{
                 relatorio.makeRelatorioPedido(pedido, caminhao, timer);
             }
         }
-
-        /*for (int i = 0; i < listaPedidosFinalizados.size(); i++) {
-            Pedidos aux = listaPedidosFinalizados.get(i);
-            System.out.println(i + " " + aux.prazo + " " + aux.nome + " " + aux.qtdeProdutosPedido);
-        }*/
+        System.out.println("sda");
     }
 
     public Pedidos getPedido() throws NullPointerException {
@@ -104,18 +100,18 @@ public class Conjunto extends Thread{
             int minutoAtual = (timer.hora - 8) * 60 + (timer.minuto);
             Pedidos pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]), Integer.parseInt(ent[3]));
             int minutoChegadaPedido = pd.horaChegada;
-            if (pd.prazo == 20)
+            if (pd.prazo <= 20 && pd.prazo != 0)
                 lists.addToListVip(pd);
             else
                 lists.addToListCommon(pd);
 
-            while (minutoAtual >= minutoChegadaPedido /*&& listaPrincipal.getSize() < qtdPedidos*/) {
+            while (minutoAtual >= minutoChegadaPedido && linhaArq != null) {
                 linhaArq = arq.ler();
                 if (linhaArq != null) {
                     ent = linhaArq.split(";");
                     pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]), Integer.parseInt(ent[3]));
                     minutoChegadaPedido = pd.horaChegada;
-                    if (pd.prazo == 20)
+                    if (pd.prazo <= 20 && pd.prazo != 0)
                         lists.addToListVip(pd);
                     else
                         lists.addToListCommon(pd);

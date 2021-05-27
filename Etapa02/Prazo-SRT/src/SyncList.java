@@ -12,6 +12,14 @@ public class SyncList {
         this.listCommon = new ArrayList();
     }
 
+    public ArrayList listVip() {
+        return listVip;
+    }
+
+    public ArrayList listCommon() {
+        return listCommon;
+    }
+
     public synchronized void addToListVip(Pedidos i){
         this.listVip.add(i);
     }

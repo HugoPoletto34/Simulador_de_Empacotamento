@@ -41,9 +41,9 @@ public class Relatorio {
         }
     }
 
-    public void criarRelatorio(String nomeArquivo) {
+    public void criarRelatorio(int id, String nomeArquivo) {
         ArquivoTextoEscrita arqEscrita = new ArquivoTextoEscrita();
-        arqEscrita.abrirArquivo("relatórioThread.md");
+        arqEscrita.abrirArquivo("relatórioThread-" + id +".md");
         arqEscrita.escrever("# Relatório - Ordenação pelo prazo + SRT");
         arqEscrita.escrever(" - Nome do Arquivo de pedidos: " + nomeArquivo);
         arqEscrita.escrever(" - Quantidade de pedidos: " + qtdePedidos);
