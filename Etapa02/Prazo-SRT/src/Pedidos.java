@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class Pedidos extends Geracao {
+public class Pedidos {
     String nome;
     int qtdeProdutosPedido;
     int qtdeProdutosEmpacotados;

@@ -5,7 +5,7 @@ public class BracoRobotico {
         this.tempoProducao = 5;
     }
 
-    public void inserirProdutos(Pedidos pedido, Pacotes pacote, Esteira esteira, MyTimer timer) throws IllegalAccessException {
+    public void inserirProdutos(Pedidos pedido, Pacotes pacote, Esteira esteira, MyTimer timer, Relogio relogio) throws IllegalAccessException {
         while (esteira.temProdutos() && !pacote.estaCheio() && pedido.temProdutosParaEmpacotar()) {
             esteira.retirarProdutoEsteira();
             pacote.inserirProduto();
@@ -13,6 +13,7 @@ public class BracoRobotico {
         }
         pedido.qtdPacotesEmbalados++;
         timer.incrementaSegundo(tempoProducao);
+        relogio.atualizarRelogio();
     }
 
     public void colocarPacoteNaEsteira(Pacotes pacote, Caminhao caminhao, MyTimer timer) {

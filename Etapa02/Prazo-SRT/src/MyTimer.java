@@ -6,10 +6,10 @@ public class MyTimer {
     int minuto;
     double segundo;
 
-    public MyTimer(int hora, int minuto) {
+    public MyTimer(int hora, int minuto, double segundo) {
         this.hora = hora;
         this.minuto = minuto;
-        this.segundo = 0;
+        this.segundo = segundo;
     }
 
     public void incrementaMinuto(int minuto) {

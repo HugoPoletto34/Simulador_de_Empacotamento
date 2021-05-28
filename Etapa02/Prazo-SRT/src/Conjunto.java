@@ -9,23 +9,30 @@ public class Conjunto extends Thread{
     ArquivoTextoLeitura arq;
     Esteira esteira;
     BracoRobotico bracoRobotico;
+    Relogio relogio;
     MyTimer timer;
     SyncList lists;
-    ArrayList<Pedidos> listaPedidosFinalizados;
+    ArrayList<Pedidos> listaPedidosVipsFinalizados;
+    ArrayList<Pedidos> listaPedidosCommonsFinalizados;
     Relatorio relatorio;
     Caminhao caminhao;
     int qtdPedidos;
 
-    public Conjunto(int id, Semaphore listLock, String nomeArquivo, ArquivoTextoLeitura arq, MyTimer timer, SyncList lists, ArrayList<Pedidos> listaPedidosFinalizados, int qtdPedidos, Caminhao caminhao) {
+    public Conjunto(int id, Semaphore listLock, String nomeArquivo, ArquivoTextoLeitura arq, SyncList lists, ArrayList<Pedidos> listaPedidosVipsFinalizados, ArrayList<Pedidos> listaPedidosCommonsFinalizados, int qtdPedidos, Relogio relogio, Caminhao caminhao) {
         this.id = id;
         this.listLock = listLock;
         this.nomeArquivo = nomeArquivo;
         this.arq = arq;
         this.esteira = new Esteira();
         this.bracoRobotico = new BracoRobotico();
-        this.timer = new MyTimer(8, 0)/*timer*/;
+        this.relogio = relogio;
+        if (getName().equals("Thread-0"))
+            this.timer = relogio.timerConj01;
+        else
+            this.timer = relogio.timerConj02;
         this.lists = lists;
-        this.listaPedidosFinalizados = listaPedidosFinalizados;
+        this.listaPedidosVipsFinalizados = listaPedidosVipsFinalizados;
+        this.listaPedidosCommonsFinalizados = listaPedidosCommonsFinalizados;
         this.qtdPedidos = qtdPedidos;
         this.relatorio = new Relatorio();
         this.caminhao = caminhao;
@@ -33,21 +40,42 @@ public class Conjunto extends Thread{
 
     @Override
     public void run() {
-        relatorio.qtdePedidos = qtdPedidos;
-        int horaInicio;
-        int minutoInicio;
-        int iLista = 0;
-        horaInicio = timer.hora;
-        minutoInicio = timer.minuto;
         try {
             startEmpacotamento(bracoRobotico, caminhao, esteira);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        relatorio.setTempoTotalExecucao(horaInicio, minutoInicio, timer.hora, timer.minuto);
+        relatorio.setTempoTotalExecucao(timer.hora, timer.minuto);
         relatorio.criarRelatorio(id, nomeArquivo);
-        System.out.println("---------------Thread-" + id + "Finalizado---------------");
+        System.out.println("---------------Processo do Conjunto-0" + (id + 1) + " Finalizado---------------");
+    }
+
+    public void startEmpacotamento(BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) throws Exception {
+        for (int i = 0; (listaPedidosCommonsFinalizados.size() + listaPedidosVipsFinalizados.size()) < qtdPedidos; i++) {
+            listLock.acquire();
+                Pedidos pedido = getMyPedido();
+                    listLock.release();
+            if (pedido != null) {
+                double initTime = timer.hora * 3600 + timer.minuto  * 60 + timer.segundo;
+                esteira.rodaProdutos(20);
+                while (!pedido.pedidoCompleto()) {
+                    Pacotes pacote = new Pacotes(pedido);
+                    pedido.pacotes.add(pacote);
+                    bracoRobotico.inserirProdutos(pedido, pacote, esteira, timer, relogio);
+                    transicaoPacoteEsteira(bracoRobotico, pacote, esteira, caminhao);
+                }
+                //System.out.println("Thread-" + id + " - " + i + " " + pedido.prazo + " " + pedido.nome + " " + pedido.qtdeProdutosPedido + " " + pedido.horaChegada);
+                if (pedido.prazo <= 50 && pedido.prazo != 0)
+                    listaPedidosVipsFinalizados.add(pedido);
+                else
+                    listaPedidosCommonsFinalizados.add(pedido);
+
+                double finalTime = (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo);
+                pedido.minutoFinalizado = pedido.prazo == 0 ? true : (((finalTime - initTime) / 60) < pedido.prazo);
+                relatorio.makeRelatorioPedido(pedido, caminhao, timer, relogio);
+            }
+        }
     }
 
     public Pedidos getMyPedido() throws InterruptedException {
@@ -66,29 +94,11 @@ public class Conjunto extends Thread{
         return result;
     }
 
-    public void startEmpacotamento(BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) throws Exception {
-        for (int i = 0; listaPedidosFinalizados.size() < qtdPedidos; i++) {
-            listLock.acquire();
-                Pedidos pedido = getMyPedido();
-                    listLock.release();
-            if (pedido != null) {
-                double initTime = timer.hora * 3600 + timer.minuto  * 60 + timer.segundo;
-                esteira.rodaProdutos(20);
-                while (!pedido.pedidoCompleto()) {
-                    Pacotes pacote = new Pacotes(pedido);
-                    pedido.pacotes.add(pacote);
-                    bracoRobotico.inserirProdutos(pedido, pacote, esteira, timer);
-                    transicaoPacoteEsteira(bracoRobotico, pacote, esteira, caminhao);
-                }
-                System.out.println("Thread-" + id + " - " + pedido.prazo + " " + pedido.nome + " " + pedido.qtdeProdutosPedido + " " + pedido.horaChegada);
-                listaPedidosFinalizados.add(pedido);
-
-                double finalTime = (timer.hora * 3600 + timer.minuto  * 60 + timer.segundo);
-                pedido.minutoFinalizado = pedido.prazo == 0 ? true : (((finalTime -initTime) / 60) < pedido.prazo);
-                relatorio.makeRelatorioPedido(pedido, caminhao, timer);
-            }
-        }
-        System.out.println("sda");
+    private void incluirPedido(Pedidos pd) {
+        if (pd.prazo <= 50 && pd.prazo != 0)
+            lists.addToListVip(pd);
+        else
+            lists.addToListCommon(pd);
     }
 
     public Pedidos getPedido() throws NullPointerException {
@@ -97,13 +107,10 @@ public class Conjunto extends Thread{
             String[] ent = {"", "", "", ""};
             if (linhaArq != null)
                 ent = linhaArq.split(";");
-            int minutoAtual = (timer.hora - 8) * 60 + (timer.minuto);
+            int minutoAtual = (relogio.relogio.hora - 8) * 60 + (relogio.relogio.minuto);
             Pedidos pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]), Integer.parseInt(ent[3]));
             int minutoChegadaPedido = pd.horaChegada;
-            if (pd.prazo <= 20 && pd.prazo != 0)
-                lists.addToListVip(pd);
-            else
-                lists.addToListCommon(pd);
+            incluirPedido(pd);
 
             while (minutoAtual >= minutoChegadaPedido && linhaArq != null) {
                 linhaArq = arq.ler();
@@ -111,10 +118,7 @@ public class Conjunto extends Thread{
                     ent = linhaArq.split(";");
                     pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]), Integer.parseInt(ent[3]));
                     minutoChegadaPedido = pd.horaChegada;
-                    if (pd.prazo <= 20 && pd.prazo != 0)
-                        lists.addToListVip(pd);
-                    else
-                        lists.addToListCommon(pd);
+                    incluirPedido(pd);
                 }
             }
             lists.organizaPedidos();
@@ -133,6 +137,7 @@ public class Conjunto extends Thread{
         bracoRobotico.colocarPacoteNaEsteira(pacote, caminhao, timer);
         esteira.rodaProdutos(20);
         timer.incrementaSegundo(tempoTransicacao);
+        relogio.atualizarRelogio();
     }
 }
 
