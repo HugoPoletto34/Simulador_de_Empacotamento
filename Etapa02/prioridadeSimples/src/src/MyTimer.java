@@ -1,5 +1,4 @@
-import java.util.Timer;
-import java.util.TimerTask;
+package src;
 
 public class MyTimer {
     int hora;

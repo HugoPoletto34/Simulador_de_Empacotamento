@@ -1,3 +1,5 @@
+package src;
+
 public class Relatorio {
     public int qtdePedidos;
     public String tempoTotalExecucao;
@@ -38,7 +40,7 @@ public class Relatorio {
     public void criarRelatorio(int id, String nomeArquivo) {
         ArquivoTextoEscrita arqEscrita = new ArquivoTextoEscrita();
         arqEscrita.abrirArquivo("relatorio_conjunto-0" + (id + 1) +".md");
-        arqEscrita.escrever("# Relatório - Ordenação pelo prazo + SRT");
+        arqEscrita.escrever("# Relatório - Ordenação Prioridade Simples");
         arqEscrita.escrever(" - Nome do Arquivo de pedidos: " + nomeArquivo);
         arqEscrita.escrever(" - Total de pedidos no conjunto-0" + (id + 1) + ": " + qtdePedidos);
         arqEscrita.escrever(" - Tempo médio gasto de pedidos em hora: " + Math.round((tempoGastoPedido / 3600) / qtdePedidos));

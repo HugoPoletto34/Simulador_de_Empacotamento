@@ -1,6 +1,8 @@
+package src;
+
 import java.util.ArrayList;
 
-public class Pedidos {
+public class Pedidos implements Comparable<Pedidos>{
     String nome;
     int qtdeProdutosPedido;
     int qtdeProdutosEmpacotados;
@@ -9,7 +11,8 @@ public class Pedidos {
     int qtdePacotesNecessario;
     int qtdPacotesEmbalados;
     boolean minutoFinalizado;
-    ArrayList<Pacotes> pacotes = new ArrayList();
+    double prioridade;
+    ArrayList<Pacotes> pacotes = new ArrayList<Pacotes>();
 
     public Pedidos() {
         super();
@@ -28,6 +31,11 @@ public class Pedidos {
         this.qtdeProdutosPedido = qtdeProdutos;
         this.qtdeProdutosEmpacotados = 0;
         this.prazo = prazo;
+        if (this.prazo == 0) {
+			this.prioridade = ((float) (540 * 2) + this.qtdeProdutosPedido) / 1000;
+		} else {
+			this.prioridade = ((float) (prazo * 2) + this.qtdeProdutosPedido) / 1000;
+		}
         this.horaChegada = horaChegada;
         this.minutoFinalizado = false;
         this.qtdePacotesNecessario = (this.qtdeProdutosPedido / 20) + (this.qtdeProdutosPedido < 20 ? 1 : 0);
@@ -86,7 +94,11 @@ public class Pedidos {
         else
             return false;
    }
-
+    
+    @Override
+	public int compareTo(Pedidos p) {
+		return Double.compare(this.prioridade, p.prioridade);
+	}
 
 
 }

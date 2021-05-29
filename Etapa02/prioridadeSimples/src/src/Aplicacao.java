@@ -1,4 +1,5 @@
-import java.io.*;
+package src;
+
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
@@ -9,8 +10,8 @@ public class Aplicacao {
         String nomeArquivo = "DadosEmpacotadeira_2.txt";
         ArquivoTextoLeitura arq = new ArquivoTextoLeitura();
         SyncList listas = new SyncList();
-        ArrayList<Pedidos> listaPedidosVipsFinalizados = new ArrayList();
-        ArrayList<Pedidos> listaPedidosCommonsFinalizados = new ArrayList();
+        ArrayList<Pedidos> listaPedidosVipsFinalizados = new ArrayList<Pedidos>();
+        ArrayList<Pedidos> listaPedidosCommonsFinalizados = new ArrayList<Pedidos>();
         arq.abrirArquivo(nomeArquivo);
         int qtdPedidos = Integer.parseInt(arq.ler());
 
@@ -20,10 +21,11 @@ public class Aplicacao {
 
         try {
             c1.start();
-            c2.start();
+            c2.start();            
             c1.join();
             c2.join();
         }catch(Exception ie){};
+        
         relatorioGeral(listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, relogio);
     }
 
