@@ -1,0 +1,2 @@
+Aqui será a lista de produtos, insira pelo menos 20
+id_produto;tamanho_produto
