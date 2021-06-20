@@ -3,10 +3,12 @@ import java.util.ArrayList;
 public class ControleContainers {
     Container[] containersEmUso;
     ArrayList<Container> todosContainers;
+    int qtdOperacoes;
 
     ControleContainers() {
         containersEmUso = new Container[4];
         todosContainers = new ArrayList<>();
+        qtdOperacoes = 0;
     }
 
     public void encher(SyncList lists) {
@@ -18,24 +20,23 @@ public class ControleContainers {
 
     public Container getContainerEmUso(Produto p) {
         Container c = null;
-        for (int i = 0; i < containersEmUso.length; i++) {
-            if (containersEmUso[i].produtoAtual == p)
-                c = containersEmUso[i];
+        for (Container container : containersEmUso) {
+            if (container.produtoAtual == p)
+                c = container;
         }
         return c;
     }
 
-    public Container trocarContainer(int indice, ArrayList<Pedidos> listaVip) {
-        Container resp = null;
+    public void trocarContainerPorProximo(int indice, ArrayList<Pedidos> listaVip, MyTimer timer) {
+        Container aux;
         for (int i = 0; i < todosContainers.size(); i++) {
-            resp = getContainer(listaVip.get(i).produto);
-            if (!resp.containerEmUso) {
-                containersEmUso[indice] = resp;
+            aux = getContainer(listaVip.get(i).produto);
+            if (!aux.containerEmUso) {
+                trocarContainer(indice, aux, timer);
                 i = todosContainers.size();
             }
         }
 
-        return resp;
     }
 
     public void preencherListaProdutos() {
@@ -67,7 +68,7 @@ public class ControleContainers {
         return null;
     }
 
-    public int temContainer(int idProduto) {
+    public int iContainerEmUso(int idProduto) {
         int indice = -1;
 
         for (int i = 0; i < containersEmUso.length; i++) {
@@ -78,27 +79,33 @@ public class ControleContainers {
         return indice;
     }
 
-    public Pedidos buscarPedido(String idThread, SyncList lists) {
+    public Pedidos buscarPedido(String idThread, SyncList lists, MyTimer timer) {
         Pedidos pedidoParaExecucao;
         if (idThread.equals("Thread-0"))
-            pedidoParaExecucao = pedidoPossivelParaExecucao(lists, lists.listVip());
+            pedidoParaExecucao = pedidoPossivelParaExecucao(lists, lists.listVip(), timer);
         else
-            pedidoParaExecucao = pedidoPossivelParaExecucao(lists, lists.listCommon());
+            pedidoParaExecucao = pedidoPossivelParaExecucao(lists, lists.listCommon(), timer);
 
         return pedidoParaExecucao;
     }
 
-    private Pedidos pedidoPossivelParaExecucao(SyncList lists, ArrayList<Pedidos> lista) {
+    private Pedidos pedidoPossivelParaExecucao(SyncList lists, ArrayList<Pedidos> lista, MyTimer timer) {
         int indice;
         Pedidos resp = null;
         int i = 0;
         do {
-            indice = temContainer(lista.get(i).produto.id);
+            Pedidos p = lista.get(i);
+            indice = iContainerEmUso(p.produto.id);
             if (indice != -1) {
                 if (containersEmUso[indice].necessarioTrocar)
-                    trocarContainer(indice, lists.listVip());
-                else
-                    resp = lista.remove(indice);
+                    trocarContainerPorProximo(indice, lists.listVip(), timer);
+                resp = lista.remove(indice);
+            }
+            else {
+                if (p.precisaSerExecutadoComUrgencia(timer)) {
+                    int indTroca = indiceContainerMenorIdade();
+                    trocarContainer(indTroca, getContainer(p.produto), timer);
+                }
             }
             i++;
         } while (indice != -1 && i < lista.size());
@@ -107,7 +114,55 @@ public class ControleContainers {
 
     }
 
+    private int indiceContainerMenorIdade() {
+        int menor = 0;
+        for (int i = 1; i < containersEmUso.length; i++) {
+            if (compMenorIdadeOuQtdProdutosAtual(i, menor))
+                menor = i;
+        }
+        return menor;
+    }
+
+    private boolean compMenorIdadeOuQtdProdutosAtual(int x, int y) {
+        if (Integer.parseInt(containersEmUso[x].idade) < Integer.parseInt(containersEmUso[y].idade))
+            return true;
+        else if (Integer.parseInt(containersEmUso[x].idade) == Integer.parseInt(containersEmUso[y].idade)){
+            return containersEmUso[x].qtdProdutosAtual < containersEmUso[y].qtdProdutosAtual;
+        }
+        else
+            return false;
+    }
+
+    private void trocarContainer(int indice, Container container, MyTimer timer) {
+        double tempoTrocaContainers = 30;
+        containersEmUso[indice].containerEmUso = false;
+        restaurarTempoVida(indice);
+        containersEmUso[indice] = container;
+        restaurarTempoVida(indice);
+        containersEmUso[indice].containerEmUso = true;
+        timer.incrementaSegundo(tempoTrocaContainers);
+    }
+
+    private void restaurarTempoVida(int indice) {
+        containersEmUso[indice].idade = "1000";
+    }
+
+
+
     public boolean vazio() {
         return containersEmUso.length == 0;
+    }
+
+    public void regitrarUso() {
+        this.qtdOperacoes++;
+        if (qtdOperacoes % 4 + 1 == 4) {
+            realizarShiftContainersEmUso();
+        }
+    }
+
+    private void realizarShiftContainersEmUso() {
+        for (Container container : containersEmUso) {
+            container.shift();
+        }
     }
 }

@@ -9,20 +9,18 @@ public class Esteira {
         this.qtdeProdutosAtual = 0;
     }
 
-    public boolean retirarProdutoEsteira() {
+    public void retirarProdutoEsteira() {
         if (temProdutos()) {
             this.qtdeProdutosAtual--;
-            return true;
         }
-        else
-            return false;
     }
 
     public boolean temProdutos() {
         return this.qtdeProdutosAtual > 0;
     }
 
-    public void rodaProdutos(int qtdeProdutos) {
+    public void rodaProdutos(int qtdeProdutos, ControleContainers controleContainers) {
         this.qtdeProdutosAtual = qtdeProdutos;
+        controleContainers.regitrarUso();
     }
 }

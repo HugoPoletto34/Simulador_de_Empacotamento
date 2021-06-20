@@ -1,17 +1,16 @@
-import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class Aplicacao {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String nomeArquivo = "../DadosEmpacotadeira_3.txt";
         ArquivoTextoLeitura arq = new ArquivoTextoLeitura();
         Semaphore listLock = new Semaphore(1);
         Caminhao caminhao = new Caminhao();
         SyncList listas = new SyncList();
         ControleContainers controleContainers = new ControleContainers();
-        ArrayList<Pedidos> listaPedidosVipsFinalizados = new ArrayList();
-        ArrayList<Pedidos> listaPedidosCommonsFinalizados = new ArrayList();
+        ArrayList<Pedidos> listaPedidosVipsFinalizados = new ArrayList<>();
+        ArrayList<Pedidos> listaPedidosCommonsFinalizados = new ArrayList<>();
         controleContainers.preencherListaProdutos();
 
         arq.abrirArquivo(nomeArquivo);
@@ -26,7 +25,7 @@ public class Aplicacao {
             c2.start();
             c1.join();
             c2.join();
-        }catch(Exception ie){};
+        }catch(Exception ignored){}
         relatorioGeral(listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, relogio);
     }
 

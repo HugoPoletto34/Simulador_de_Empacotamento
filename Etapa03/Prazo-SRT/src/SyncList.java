@@ -1,11 +1,9 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public class SyncList {
 
-    private ArrayList<Pedidos> listVip;
-    private ArrayList<Pedidos> listCommon;
+    private final ArrayList<Pedidos> listVip;
+    private final ArrayList<Pedidos> listCommon;
 
     public SyncList(){
         this.listVip = new ArrayList();
@@ -98,10 +96,7 @@ public class SyncList {
             return true;
         }
         else if (listaPedidos.get(p1).prazo == listaPedidos.get(p2).prazo) {
-            if (listaPedidos.get(p1).qtdeProdutosPedido > listaPedidos.get(p2).qtdeProdutosPedido)
-                return true;
-            else
-                return false;
+            return listaPedidos.get(p1).qtdeProdutosPedido > listaPedidos.get(p2).qtdeProdutosPedido;
         }
         else
             return false;

@@ -11,7 +11,7 @@ public class Pedidos {
     double tempoMinutoParaFinalizar;
     boolean minutoFinalizado;
     Produto produto;
-    ArrayList<Pacotes> pacotes = new ArrayList();
+    ArrayList pacotes;
 
     public Pedidos(String nome, int qtdeProdutos, int prazo, int minutoEntrado, Produto produto) {
         this.nome = nome;
@@ -21,6 +21,7 @@ public class Pedidos {
         this.minutoEntrado = minutoEntrado;
         this.minutoFinalizado = false;
         this.produto = produto;
+        this.pacotes = new ArrayList<>();
         this.qtdePacotesNecessario = (this.qtdeProdutosPedido / produto.volume) + (this.qtdeProdutosPedido < produto.volume ? 1 : 0);
         this.tempoMinutoParaFinalizar = (BracoRobotico.getTempoProducao() + Esteira.getTempoMinutoTransicao() * this.qtdePacotesNecessario);
     }
@@ -29,9 +30,17 @@ public class Pedidos {
         return this.qtdeProdutosEmpacotados == this.qtdeProdutosPedido;
     }
 
+    public int minutoMaximoParaFim() {
+        return this.minutoEntrado + this.prazo;
+    }
+
+    public boolean precisaSerExecutadoComUrgencia(MyTimer timer) {
+        double minutoAtual = timer.tempoEmMinutos();
+        return (minutoAtual + tempoMinutoParaFinalizar + 1) > minutoMaximoParaFim();
+    }
+
     public boolean temProdutosParaEmpacotar() {
-        boolean result = this.qtdeProdutosEmpacotados != this.qtdeProdutosPedido;
-        return result;
+        return this.qtdeProdutosEmpacotados != this.qtdeProdutosPedido;
     }
 
     public void empacotandoProduto() {

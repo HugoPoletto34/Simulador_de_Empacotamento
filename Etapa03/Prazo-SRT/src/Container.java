@@ -24,7 +24,7 @@ public class Container {
     }
 
     public boolean possivelRetirarQuantidade(int qtdProdutos) {
-        if (qtdProdutosAtual < qtdProdutos && tentativaRetirar == false)
+        if (qtdProdutosAtual < qtdProdutos && !tentativaRetirar)
             this.tentativaRetirar = true;
         else if (tentativaRetirar || vazia())
             this.necessarioTrocar = true;
@@ -33,9 +33,18 @@ public class Container {
     }
 
     public int retirarProdutos(int qtdProdutos) {
-        if (!vazia() && possivelRetirarQuantidade(qtdProdutos))
+        if (!vazia() && possivelRetirarQuantidade(qtdProdutos)) {
+            computarUso();
             this.qtdProdutosAtual -= qtdProdutos;
-
+        }
         return qtdProdutos;
+    }
+
+    private void computarUso() {
+        this.idade.toCharArray()[0] = '1';
+    }
+
+    public void shift() {
+        this.idade = '0' + this.idade.substring(0, 2);
     }
 }

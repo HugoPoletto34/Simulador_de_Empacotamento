@@ -65,7 +65,7 @@ public class Conjunto extends Thread{
                 Container c = controleContainers.getContainerEmUso(pedido.produto);
 
                 if (c != null) {
-                    esteira.rodaProdutos(c.retirarProdutos(qtdProdutosPorPacote));
+                    esteira.rodaProdutos(c.retirarProdutos(qtdProdutosPorPacote), controleContainers);
                     while (!pedido.pedidoCompleto()) {
                         pedido.pacotes.add(pacote);
                         bracoRobotico.inserirProdutos(pedido, pacote, esteira, timer, relogio);
@@ -91,13 +91,13 @@ public class Conjunto extends Thread{
         if (lists.getSizeListVip() == 0 && this.getName().equals("Thread-0")) {
             result = getPedido();
         } else if (lists.getSizeListVip() >= 0 && this.getName().equals("Thread-0")){
-            result = controleContainers.buscarPedido(this.getName(), lists);
+            result = controleContainers.buscarPedido(this.getName(), lists, timer);
         }
         else if (lists.getSizeListCommon() == 0 && this.getName().equals("Thread-1")) {
             result = getPedido();
         }
         else if (lists.getSizeListCommon() >= 0 && this.getName().equals("Thread-1")){
-            result = controleContainers.buscarPedido(this.getName(), lists);
+            result = controleContainers.buscarPedido(this.getName(), lists, timer);
         }
         return result;
     }
@@ -133,7 +133,7 @@ public class Conjunto extends Thread{
             if (controleContainers.vazio())
                 controleContainers.encher(lists);
 
-            return controleContainers.buscarPedido(this.getName(), lists);
+            return controleContainers.buscarPedido(this.getName(), lists, timer);
 
         } catch (Exception ignored) {
 
@@ -143,8 +143,8 @@ public class Conjunto extends Thread{
 
     public void transicaoPacoteEsteira(int qtdProdutosPorPacote, Container c, BracoRobotico bracoRobotico, Pacotes pacote, Esteira esteira, Caminhao caminhao) {
         double tempoTransicacao = Esteira.getTempoMinutoTransicao();
-        bracoRobotico.colocarPacoteNaEsteira(pacote, caminhao, timer);
-        esteira.rodaProdutos(c.retirarProdutos(qtdProdutosPorPacote));
+        bracoRobotico.colocarPacoteNaEsteira(pacote, caminhao);
+        esteira.rodaProdutos(c.retirarProdutos(qtdProdutosPorPacote), controleContainers);
         timer.incrementaSegundo(tempoTransicacao);
         relogio.atualizarRelogio();
     }
