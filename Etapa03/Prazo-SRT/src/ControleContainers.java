@@ -57,11 +57,11 @@ public class ControleContainers {
         return null;
     }
 
-    public void trocarContainerPorProximo(int indice, Relogio relogio, Semaphore containersLock) {
+    public void trocarContainerPorProximo(int indice, Relogio relogio, Semaphore containersLock, Relatorio r) {
         System.out.println("Trocando para proximo container: substituindo container " + indice);
         Container aux = proxContainerDisponivel();
         todosContainers.get(indice).reporProdutosContainer();
-        trocarContainer(indice, aux, relogio, containersLock);
+        trocarContainer(indice, aux, relogio, containersLock, r);
     }
 
     public void preencherListaProdutos() {
@@ -104,17 +104,17 @@ public class ControleContainers {
         return indice;
     }
 
-    public Pedidos buscarPedido(String idThread,SyncList lists, Relogio relogio, Semaphore containersLock) {
+    public Pedidos buscarPedido(String idThread,SyncList lists, Relogio relogio, Semaphore containersLock, Relatorio r) {
         Pedidos pedidoParaExecucao;
         if (idThread.equals("Thread-0"))
-            pedidoParaExecucao = pedidoPossivelParaExecucao(lists.listVip(), relogio, containersLock);
+            pedidoParaExecucao = pedidoPossivelParaExecucao(lists.listVip(), relogio, containersLock, r);
         else
-            pedidoParaExecucao = pedidoPossivelParaExecucao(lists.listCommon(), relogio, containersLock);
+            pedidoParaExecucao = pedidoPossivelParaExecucao(lists.listCommon(), relogio, containersLock, r);
 
         return pedidoParaExecucao;
     }
 
-    private Pedidos pedidoPossivelParaExecucao(ArrayList<Pedidos> lista, Relogio relogio, Semaphore containersLock) {
+    private Pedidos pedidoPossivelParaExecucao(ArrayList<Pedidos> lista, Relogio relogio, Semaphore containersLock, Relatorio r) {
         int indice;
         Pedidos resp = null;
         int i = 0;
@@ -124,7 +124,7 @@ public class ControleContainers {
                 indice = iContainerEmUso(p.produto.volume);
                 if (indice != -1) {
                     if (containersEmUso[indice].avaliarQtdProdutosContainer()) {
-                        trocarContainerPorProximo(indice, relogio, containersLock);
+                        trocarContainerPorProximo(indice, relogio, containersLock, r);
                         indice = -1;
                     }
                     else
@@ -132,7 +132,7 @@ public class ControleContainers {
                 } else {
                     if (p.precisaSerExecutadoComUrgencia(relogio)) {
                         int indTroca = indiceContainerMenorIdade();
-                        trocarContainer(indTroca, getContainer(p.produto.volume), relogio, containersLock);
+                        trocarContainer(indTroca, getContainer(p.produto.volume), relogio, containersLock, r);
                         indice = indTroca;
                         resp = lista.remove(i);
                     }
@@ -142,7 +142,7 @@ public class ControleContainers {
 
             if (resp == null) {
                 int indTroca = indiceContainerMenorIdade();
-                trocarContainer(indTroca, getContainer(lista.get(0).produto.volume), relogio, containersLock);
+                trocarContainer(indTroca, getContainer(lista.get(0).produto.volume), relogio, containersLock, r);
                 resp = lista.remove(0);
             }
         }
@@ -184,7 +184,7 @@ public class ControleContainers {
             return false;
     }
 
-    public void trocarContainer(int indice, Container container, Relogio relogio, Semaphore containersLock) {
+    public void trocarContainer(int indice, Container container, Relogio relogio, Semaphore containersLock, Relatorio r) {
         try {
             containersLock.acquire();
         } catch (InterruptedException e) {
@@ -198,7 +198,7 @@ public class ControleContainers {
         restaurarTempoVida(indice);
         containersEmUso[indice].containerEmUso = true;
         relogio.relogio.incrementaSegundo(tempoTrocaContainers);
-
+        r.qtdTrocasContainers++;
         containersLock.release();
     }
 

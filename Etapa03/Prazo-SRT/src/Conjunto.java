@@ -95,7 +95,7 @@ public class Conjunto extends Thread{
 
     public Pedidos buscarMeuPedidoBaseadoNosContainers() {
         Pedidos p;
-        p = controleContainers.buscarPedido(this.getName(), lists, relogio, containersLock);
+        p = controleContainers.buscarPedido(this.getName(), lists, relogio, containersLock, relatorio);
 
         return p;
     }

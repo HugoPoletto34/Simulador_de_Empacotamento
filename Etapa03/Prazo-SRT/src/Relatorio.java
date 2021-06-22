@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Relatorio {
     public int qtdePedidos;
     public String tempoTotalExecucao;
@@ -6,6 +8,7 @@ public class Relatorio {
     public int qtdePedidosFinalizadosMeioDia;
     public int qtdePacotesFeitos;
     public int qtdePedidosFinalizados;
+    public int qtdTrocasContainers;
     public double tempoGastoPedido;
     public boolean jaPassouMeioDia = false;
 
@@ -20,12 +23,13 @@ public class Relatorio {
         else
             qtdePedidosFinalizadosAntesDoPrazo++;
 
-        if (!jaPassouMeioDia && relogio.relogio.hora >= 12) {
+        if (!jaPassouMeioDia && relogio.relogio.hora <= 12) {
             qtdePacotesFeitosMeioDia = caminhao.pacotesCaminhao.size();
-            jaPassouMeioDia = true;
-        }
-        else if (!jaPassouMeioDia)
             qtdePedidosFinalizadosMeioDia++;
+        }
+        if (relogio.relogio.hora > 12)
+            jaPassouMeioDia = true;
+
 
         tempoGastoPedido += ((timer.hora) * 3600 + timer.minuto  * 60 + timer.segundo);
 
@@ -54,5 +58,32 @@ public class Relatorio {
         arqEscrita.escrever(" - Quantidade de pedidos finalizados: " + qtdePedidosFinalizados);
 
         arqEscrita.fecharArquivo();
+    }
+
+    public int quantosVipsEstaoPendentes(ArrayList<Pedidos> listVip) {
+        int count = 0;
+        for (int i = 0; i < listVip.size(); i++) {
+            if (listVip.get(i).prazo <= 100 && listVip.get(i).prazo != 0)
+                count++;
+        }
+        return count;
+    }
+
+    public int quantosComunsEstaoPendentes(ArrayList<Pedidos> listCommon) {
+        int count = 0;
+        for (int i = 0; i < listCommon.size(); i++) {
+            if (listCommon.get(i).prazo > 100)
+                count++;
+        }
+        return count;
+    }
+
+    public int quantosSemPrazoEstaoPendentes(ArrayList<Pedidos> listCommon) {
+        int count = 0;
+        for (int i = 0; i < listCommon.size(); i++) {
+            if (listCommon.get(i).prazo == 0)
+                count++;
+        }
+        return count;
     }
 }

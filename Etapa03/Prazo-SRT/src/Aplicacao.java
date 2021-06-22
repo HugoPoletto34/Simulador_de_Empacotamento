@@ -27,17 +27,22 @@ public class Aplicacao {
             c1.join();
             c2.join();
         }catch(Exception ignored){}
-        relatorioGeral(listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, relogio);
+        relatorioGeral(listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, relogio, listas, c1.relatorio);
     }
 
-    public static void relatorioGeral(ArrayList<Pedidos> listaPedidosVipsFinalizados, ArrayList<Pedidos> listaPedidosCommonsFinalizados, Relogio relogio) {
+    public static void relatorioGeral(ArrayList<Pedidos> listaPedidosVipsFinalizados, ArrayList<Pedidos> listaPedidosCommonsFinalizados, Relogio relogio, SyncList listas,Relatorio relatorio) {
         ArquivoTextoEscrita arq = new ArquivoTextoEscrita();
         arq.abrirArquivo("relatorio_geral.md");
         arq.escrever("# Relatório Geral");
         arq.escrever(" - Quantidade Pedidos vips: " + listaPedidosVipsFinalizados.size());
         arq.escrever(" - Quantidade Pedidos comuns: " + listaPedidosCommonsFinalizados.size());
+        arq.escrever(" - Quantidade de Trocas de containers: " + relatorio.qtdTrocasContainers);
         arq.escrever(" - Quantidade total de Pedidos analizados: " + (listaPedidosVipsFinalizados.size() + listaPedidosCommonsFinalizados.size()));
-        arq.escrever(" - Expediente total: 8h0m -> " + relogio.relogio.hora + "h" + relogio.relogio.minuto + "s");
+        arq.escrever(" - Quantidade total de Pedidos pendentes: " + (319 - (listaPedidosVipsFinalizados.size() + listaPedidosCommonsFinalizados.size())));
+        arq.escrever("   - Num. pedidos vips: " + relatorio.quantosVipsEstaoPendentes(listas.listVip()));
+        arq.escrever("   - Num. pedidos Comuns: " + relatorio.quantosComunsEstaoPendentes(listas.listCommon()));
+        arq.escrever("   - Num. pedidos sem prazo: " + relatorio.quantosSemPrazoEstaoPendentes(listas.listCommon()));
+        arq.escrever(" - Expediente total: 8h0m -> " + relogio.relogio.hora + "h" + relogio.relogio.minuto + "m");
         arq.fecharArquivo();
     }
 }
