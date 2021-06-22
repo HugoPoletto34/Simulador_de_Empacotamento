@@ -154,15 +154,6 @@ public class ControleContainers {
 
     }
 
-    private int proxContainer(ArrayList<Pedidos> lista, int iComecar) {
-        boolean resp;
-        do {
-            resp = containerProdutoEstaInserido(getContainerEmUso(lista.get(iComecar++).produto));
-        } while (!resp);
-
-        return lista.get(iComecar).produto.volume;
-    }
-
     private int indiceContainerMenorIdade() {
         int menor = 0;
         for (int i = 1; i < containersEmUso.length; i++) {

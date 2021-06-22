@@ -7,8 +7,8 @@
  - Expediente: 8h à 17h
  - Expediente total de empacotamento: 2h25m
 ## Quantidade de Pacotes e pedidos às 12h:
- - Quantidade de pacotes feitos: 3427
+ - Quantidade de pacotes feitos: 3512
  - Quantidade de pedidos finalizados: 44
 ## Quantidade de Pacotes e pedidos no caminhão no fim do expediente (17h):
- - Quantidade de pacotes: 3427
+ - Quantidade de pacotes: 3512
  - Quantidade de pedidos finalizados: 44
