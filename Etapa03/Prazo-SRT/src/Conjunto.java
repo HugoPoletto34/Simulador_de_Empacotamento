@@ -5,6 +5,7 @@ import java.util.concurrent.Semaphore;
 public class Conjunto extends Thread{
     int id;
     Semaphore listLock;
+    Semaphore containersLock;
     String nomeArquivo;
     ArquivoTextoLeitura arq;
     Esteira esteira;
@@ -19,9 +20,10 @@ public class Conjunto extends Thread{
     Caminhao caminhao;
     int qtdPedidos;
 
-    public Conjunto(int id, Semaphore listLock, String nomeArquivo, ArquivoTextoLeitura arq, ControleContainers controleContainers, SyncList lists, ArrayList<Pedidos> listaPedidosVipsFinalizados, ArrayList<Pedidos> listaPedidosCommonsFinalizados, int qtdPedidos, Relogio relogio, Caminhao caminhao) {
+    public Conjunto(int id, Semaphore listLock, Semaphore containersLock, String nomeArquivo, ArquivoTextoLeitura arq, ControleContainers controleContainers, SyncList lists, ArrayList<Pedidos> listaPedidosVipsFinalizados, ArrayList<Pedidos> listaPedidosCommonsFinalizados, int qtdPedidos, Relogio relogio, Caminhao caminhao) {
         this.id = id;
         this.listLock = listLock;
+        this.containersLock = containersLock;
         this.nomeArquivo = nomeArquivo;
         this.arq = arq;
         this.esteira = new Esteira();
@@ -54,7 +56,8 @@ public class Conjunto extends Thread{
     }
 
     public void startEmpacotamento(BracoRobotico bracoRobotico, Caminhao caminhao, Esteira esteira) throws Exception {
-        while ((listaPedidosCommonsFinalizados.size() + listaPedidosVipsFinalizados.size()) < qtdPedidos) {
+        int i = 0;
+        while (relogio.getTempoMinutosSemHorasIniciais() < 540) {
             listLock.acquire();
                 Pedidos pedido = getMyPedido();
                     listLock.release();
@@ -65,15 +68,17 @@ public class Conjunto extends Thread{
                 Container c = controleContainers.getContainerEmUso(pedido.produto);
 
                 if (c != null) {
-                    esteira.rodaProdutos(c.retirarProdutos(qtdProdutosPorPacote), controleContainers);
-                    while (!pedido.pedidoCompleto()) {
+                    esteira.rodaProdutos(qtdProdutosPorPacote, controleContainers);
+                    c.computarUso();
+                    while (!pedido.pedidoCompleto() && !c.necessarioTrocar) {
                         pedido.pacotes.add(pacote);
                         bracoRobotico.inserirProdutos(pedido, pacote, esteira, timer, relogio);
                         transicaoPacoteEsteira(qtdProdutosPorPacote, c, bracoRobotico, pacote, esteira, caminhao);
                         pacote = new Pacotes(pedido);
                     }
-                    //System.out.println("Thread-" + id + " - " + i + " " + pedido.prazo + " " + pedido.nome + " " + pedido.qtdeProdutosPedido + " " + pedido.horaChegada);
-                    if (pedido.prazo <= 50 && pedido.prazo != 0)
+                    System.out.println("Thread-" + id + " - " + i + " " + pedido.prazo + " " + pedido.nome + " " + pedido.qtdeProdutosPedido + " " + pedido.minutoEntrado + " produto: " + pedido.produto.volume);
+                    i++;
+                    if (pedido.prazo <= 100 && pedido.prazo != 0)
                         listaPedidosVipsFinalizados.add(pedido);
                     else
                         listaPedidosCommonsFinalizados.add(pedido);
@@ -82,8 +87,17 @@ public class Conjunto extends Thread{
                     pedido.minutoFinalizado = pedido.prazo == 0 || (((finalTime - initTime) / 60) < pedido.prazo);
                     relatorio.makeRelatorioPedido(pedido, caminhao, timer, relogio);
                 }
+                else
+                    System.out.println("ACHOU NAO MANO");
             }
         }
+    }
+
+    public Pedidos buscarMeuPedidoBaseadoNosContainers() {
+        Pedidos p;
+        p = controleContainers.buscarPedido(this.getName(), lists, relogio, containersLock);
+
+        return p;
     }
 
     public Pedidos getMyPedido() {
@@ -91,19 +105,19 @@ public class Conjunto extends Thread{
         if (lists.getSizeListVip() == 0 && this.getName().equals("Thread-0")) {
             result = getPedido();
         } else if (lists.getSizeListVip() >= 0 && this.getName().equals("Thread-0")){
-            result = controleContainers.buscarPedido(this.getName(), lists, timer);
+            result = buscarMeuPedidoBaseadoNosContainers();
         }
         else if (lists.getSizeListCommon() == 0 && this.getName().equals("Thread-1")) {
             result = getPedido();
         }
         else if (lists.getSizeListCommon() >= 0 && this.getName().equals("Thread-1")){
-            result = controleContainers.buscarPedido(this.getName(), lists, timer);
+            result = buscarMeuPedidoBaseadoNosContainers();
         }
         return result;
     }
 
     private void incluirPedido(Pedidos pd) {
-        if (pd.prazo <= 50 && pd.prazo != 0)
+        if (pd.prazo <= 100 && pd.prazo != 0)
             lists.addToListVip(pd);
         else
             lists.addToListCommon(pd);
@@ -115,7 +129,7 @@ public class Conjunto extends Thread{
             String[] ent = {"", "", "", "", ""};
             if (linhaArq != null)
                 ent = linhaArq.split(";");
-            int minutoAtual = (relogio.relogio.hora - 8) * 60 + (relogio.relogio.minuto);
+            int minutoAtual = relogio.getTempoMinutosSemHorasIniciais();
             Pedidos pd = new Pedidos(ent[0], Integer.parseInt(ent[1]), Integer.parseInt(ent[2]), Integer.parseInt(ent[3]), controleContainers.getProduto(Integer.parseInt(ent[4])));
             int minutoChegadaPedido = pd.minutoEntrado;
             incluirPedido(pd);
@@ -133,7 +147,7 @@ public class Conjunto extends Thread{
             if (controleContainers.vazio())
                 controleContainers.encher(lists);
 
-            return controleContainers.buscarPedido(this.getName(), lists, timer);
+            return buscarMeuPedidoBaseadoNosContainers();
 
         } catch (Exception ignored) {
 
@@ -143,8 +157,9 @@ public class Conjunto extends Thread{
 
     public void transicaoPacoteEsteira(int qtdProdutosPorPacote, Container c, BracoRobotico bracoRobotico, Pacotes pacote, Esteira esteira, Caminhao caminhao) {
         double tempoTransicacao = Esteira.getTempoMinutoTransicao();
+        esteira.rodaProdutos(qtdProdutosPorPacote, controleContainers);
+        c.computarUso();
         bracoRobotico.colocarPacoteNaEsteira(pacote, caminhao);
-        esteira.rodaProdutos(c.retirarProdutos(qtdProdutosPorPacote), controleContainers);
         timer.incrementaSegundo(tempoTransicacao);
         relogio.atualizarRelogio();
     }

@@ -3,32 +3,30 @@ public class Container {
     Produto produtoAtual;
     int qtdProdutosInseridos;
     int qtdProdutosAtual;
-    boolean tentativaRetirar;
     boolean necessarioTrocar;
     boolean containerEmUso;
-    String idade;
+    boolean emTroca = false;
+    char[] idade;
 
     Container(Produto produto) {
         this.capacidadeMaxima = 1_000_000;
         this.produtoAtual = produto;
         this.qtdProdutosInseridos = (int) Math.floor(this.capacidadeMaxima / produto.volume);
         this.qtdProdutosAtual = this.qtdProdutosInseridos;
-        this.tentativaRetirar = false;
+        this.necessarioTrocar = false;
         this.containerEmUso = false;
-        this.tentativaRetirar = false;
-        this.idade = "1000";
+        this.idade = new char[]{'1', '0', '0', '0'};
     }
 
     public boolean vazia() {
         return this.qtdProdutosAtual == 0;
     }
 
-    public boolean possivelRetirarQuantidade(int qtdProdutos) {
-        if (qtdProdutosAtual < qtdProdutos && !tentativaRetirar)
-            this.tentativaRetirar = true;
-        else if (tentativaRetirar || vazia())
-            this.necessarioTrocar = true;
+    public boolean avaliarQtdProdutosContainer() {
+        return this.qtdProdutosAtual <= 15 || necessarioTrocar;
+    }
 
+    public boolean possivelRetirarQuantidade(int qtdProdutos) {
         return qtdProdutosAtual >= qtdProdutos;
     }
 
@@ -36,15 +34,36 @@ public class Container {
         if (!vazia() && possivelRetirarQuantidade(qtdProdutos)) {
             computarUso();
             this.qtdProdutosAtual -= qtdProdutos;
+            return qtdProdutos;
         }
-        return qtdProdutos;
+        if (!vazia()) {
+            this.necessarioTrocar = true;
+            int qtdDisponivel = this.qtdProdutosAtual;
+            this.qtdProdutosAtual = 0;
+            return qtdDisponivel;
+        }
+        else
+            this.necessarioTrocar = true;
+            return 0;
     }
 
-    private void computarUso() {
-        this.idade.toCharArray()[0] = '1';
+    public void computarUso() {
+        this.idade[0] = '1';
     }
 
     public void shift() {
-        this.idade = '0' + this.idade.substring(0, 2);
+        if (!emTroca) {
+            emTroca = true;
+            for (int i = 3; i > 0; i--) {
+                this.idade[i] = this.idade[i - 1];
+            }
+            this.idade[0] = '0';
+            emTroca = false;
+        }
+    }
+
+    public void reporProdutosContainer() {
+        this.qtdProdutosAtual = this.qtdProdutosInseridos;
+        this.necessarioTrocar = false;
     }
 }

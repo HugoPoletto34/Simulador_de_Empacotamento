@@ -18,7 +18,6 @@ public class Pacotes {
         }
     }
 
-
     public boolean cabeProduto(Produto produto) {
         return volumeOcupado + produto.volume > limite;
     }
@@ -26,6 +25,5 @@ public class Pacotes {
     public int quantosProdutosCabeNoPacote(int volumeProduto) {
         return Math.round(this.limite / volumeProduto);
     }
-
 
 }

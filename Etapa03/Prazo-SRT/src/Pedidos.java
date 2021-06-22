@@ -26,6 +26,10 @@ public class Pedidos {
         this.tempoMinutoParaFinalizar = (BracoRobotico.getTempoProducao() + Esteira.getTempoMinutoTransicao() * this.qtdePacotesNecessario);
     }
 
+    public Pedidos() {
+
+    }
+
     public boolean pedidoCompleto() {
         return this.qtdeProdutosEmpacotados == this.qtdeProdutosPedido;
     }
@@ -34,9 +38,10 @@ public class Pedidos {
         return this.minutoEntrado + this.prazo;
     }
 
-    public boolean precisaSerExecutadoComUrgencia(MyTimer timer) {
-        double minutoAtual = timer.tempoEmMinutos();
-        return (minutoAtual + tempoMinutoParaFinalizar + 1) > minutoMaximoParaFim();
+    public boolean precisaSerExecutadoComUrgencia(Relogio relogio) {
+        double minutoAtual = relogio.getTempoMinutosSemHorasIniciais();
+        double minutoMaximoParaFim = minutoMaximoParaFim();
+        return minutoMaximoParaFim - (minutoAtual + tempoMinutoParaFinalizar) <= 1 && minutoMaximoParaFim > minutoAtual;
     }
 
     public boolean temProdutosParaEmpacotar() {

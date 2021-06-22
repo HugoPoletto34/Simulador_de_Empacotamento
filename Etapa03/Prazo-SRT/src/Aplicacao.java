@@ -6,6 +6,7 @@ public class Aplicacao {
         String nomeArquivo = "../DadosEmpacotadeira_3.txt";
         ArquivoTextoLeitura arq = new ArquivoTextoLeitura();
         Semaphore listLock = new Semaphore(1);
+        Semaphore containersLock = new Semaphore(1);
         Caminhao caminhao = new Caminhao();
         SyncList listas = new SyncList();
         ControleContainers controleContainers = new ControleContainers();
@@ -17,8 +18,8 @@ public class Aplicacao {
         int qtdPedidos = Integer.parseInt(arq.ler());
 
         Relogio relogio = new Relogio(8, 0);
-        Conjunto c1 = new Conjunto(0, listLock, nomeArquivo, arq, controleContainers, listas, listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, qtdPedidos, relogio, caminhao);
-        Conjunto c2 = new Conjunto(1, listLock, nomeArquivo, arq, controleContainers, listas, listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, qtdPedidos, relogio, caminhao);
+        Conjunto c1 = new Conjunto(0, listLock, containersLock, nomeArquivo, arq, controleContainers, listas, listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, qtdPedidos, relogio, caminhao);
+        Conjunto c2 = new Conjunto(1, listLock, containersLock, nomeArquivo, arq, controleContainers, listas, listaPedidosVipsFinalizados, listaPedidosCommonsFinalizados, qtdPedidos, relogio, caminhao);
 
         try {
             c1.start();

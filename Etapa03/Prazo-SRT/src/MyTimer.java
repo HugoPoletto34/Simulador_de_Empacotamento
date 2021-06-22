@@ -28,6 +28,6 @@ public class MyTimer {
     }
 
     public double tempoEmMinutos() {
-        return this.hora * 60 + this.minuto + this.segundo;
+        return this.hora * 60 + this.minuto;
     }
 }
